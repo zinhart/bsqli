@@ -70,11 +70,46 @@ def get_length(
             return i
 
 
-def get_count(url:str, base_query:Callable[[str],str], sub_query: str, sqli_truth_condition:Callable[[requests.models.Response], bool], lower_bound: int = 0, upper_bound: int = 1000, query_encoder:Callable[[str], str]=None, comment:str = "", debug:bool=False):
+def get_count(
+    url:str,
+    base_query:Callable[[str],str],
+    sub_query: str,
+    sqli_truth_condition:Callable[[requests.models.Response], bool],
+    lower_bound: int = 0,
+    upper_bound: int = 1000,
+    query_encoder:Callable[[str], str]=None,
+    comment:str = "",
+    debug:bool=False):
     pass
-def binary_search(url:str, base_query:Callable[[str],str], sub_query: str, sqli_truth_condition:Callable[[requests.models.Response], bool], lo:int, hi:int, position:str, query_encoder:Callable[[str], str]=None, comment:str = "", debug:bool=False):
+def binary_search(
+    url:str,
+    base_query:Callable[[str],str],
+    sub_query: str,
+    sqli_truth_condition:Callable[[requests.models.Response], bool],
+    lo:int,
+    hi:int,
+    position:str,
+    query_encoder:Callable[[str], str]=None,
+    comment:str = "",
+    debug:bool=False):
     pass
-def get_string(url:str, base_query:Callable[[str],str], sub_query: str, sqli_truth_condition:Callable[[requests.models.Response], bool], strlen:int, query_encoder:Callable[[str], str]=None, comment:str = "", debug:bool=False):
+def get_string(
+    url:str,
+    base_query:Callable[[str],str],
+    sub_query: str,
+    sqli_truth_condition:Callable[[requests.models.Response], bool],
+    strlen:int,
+    query_encoder:Callable[[str], str]=None, 
+    comment:str = "", 
+    debug:bool=False
+    ):
     pass
-def report(url:str, base_query:Callable[[str],str], sub_query: str, sqli_truth_condition:Callable[[requests.models.Response], bool], query_encoder:Callable[[str], str]=None, comment:str = "", debug:bool=False):
+def report(
+    url:str,
+    base_query:Callable[[str],str],
+    sub_query: str,
+    sqli_truth_condition:Callable[[requests.models.Response], bool],
+    query_encoder:Callable[[str], str]=None,
+    comment:str = "",
+    debug:bool=False):
     pass
