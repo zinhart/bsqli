@@ -60,7 +60,8 @@ def get_length(
     sqli_truth_condition:Callable[[requests.models.Response], bool],
     url:str,
     base_query:Callable[[str],str],
-    sub_query: str, # WE PASS QUERIES WITH THE APPROPRIATE DB TYPE HERE
+    outer_query:Callable[[str,str],str],
+    inner_query: str, # WE PASS QUERIES WITH THE APPROPRIATE DB TYPE HERE
     lower_bound: int = 1,
     upper_bound: int = 65,
     query_encoder:Callable[[str], str]=None,
@@ -68,9 +69,9 @@ def get_length(
     debug:bool=False
     ):
     for i in range(lower_bound, upper_bound):
+        sub_query = outer_query(inner_query, str(i)) # see QUERIES['STR_EXFIL']
         if(question(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, ordinal=str(i), query_encoder=query_encoder, comment=comment, debug=debug)):
             return i
-
 
 def get_count(
     req:Callable[[requests.models.Response],str],
